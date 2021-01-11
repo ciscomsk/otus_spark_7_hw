@@ -16,7 +16,7 @@ object KafkaConsumer extends App {
 
   val consumer = new KafkaConsumer(props, new StringDeserializer, new StringDeserializer)
 
-  Try {
+  val receive: Try[Unit] = Try {
     consumer.subscribe(List("books").asJavaCollection)
 
     consumer.poll(Duration.ofSeconds(1))
@@ -37,6 +37,12 @@ object KafkaConsumer extends App {
       .foreach(msg => println(msg.value))
 
     consumer.close()
+  }
+
+  if (receive.isSuccess) println("Receiving successfully end.")
+  else {
+    println("Exception raised during receiving.")
+    println(receive.get)
   }
 
 }

@@ -66,10 +66,16 @@ object KafkaProducer extends App {
     val props: Properties = new Properties()
     props.put("bootstrap.servers", "localhost:29092")
 
-    Try {
+    val send: Try[Unit] = Try {
       val producer: KafkaProducer[String, String] = new KafkaProducer(props, new StringSerializer, new StringSerializer)
       jsonList.foreach(json => producer.send(new ProducerRecord("books", json._1 , json._2)))
       producer.close()
+    }
+
+    if (send.isSuccess) println("Sending successfully end.")
+    else {
+      println("Exception raised during sending.")
+      println(send.get)
     }
   }
 

@@ -68,7 +68,7 @@ object KafkaProducer extends App {
 
     Try {
       val producer: KafkaProducer[String, String] = new KafkaProducer(props, new StringSerializer, new StringSerializer)
-      jsonList.foreach { json => producer.send(new ProducerRecord("books", json._1 , json._2)) }
+      jsonList.foreach(json => producer.send(new ProducerRecord("books", json._1 , json._2)))
       producer.close()
     }
   }

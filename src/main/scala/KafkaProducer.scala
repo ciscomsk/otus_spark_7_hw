@@ -74,7 +74,6 @@ object KafkaProducer extends App {
     val books: List[Try[Book]] = data.map(parseData(_, headers))
 
     val successTransform: List[Book] = books.filter(_.isSuccess).map(_.get)
-    println(books.count(_.isSuccess))
 
     implicit val formats: DefaultFormats.type = DefaultFormats
     val jsonList: List[(String, String)] = successTransform

@@ -34,7 +34,7 @@ object KafkaProducer extends App {
 
         Try {
           Book(
-            tokens(headers("Name")),
+            tokens(0),
             tokens(headers("Author")),
             tokens(headers("User Rating")).toDouble,
             tokens(headers("Reviews")).toInt,

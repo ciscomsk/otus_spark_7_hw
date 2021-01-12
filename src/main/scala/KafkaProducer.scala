@@ -26,20 +26,43 @@ object KafkaProducer extends App {
   def parseHeaders(header: String): Map[String, Int] =
     header.split(",").zipWithIndex.toMap
 
+  // Сделано допущение, что колонка, содержащая имя, всегда первая,
+  // остальные могут менять свое положение
   def parseData(data: String, headers: Map[String, Int]): Try[Book] = {
-    val tokens: Array[String] = data.split(",")
+      if (!data.startsWith("\"")) {
+        val tokens: Array[String] = data.split(",")
 
-    Try {
-      Book(
-        tokens(headers("Name")),
-        tokens(headers("Author")),
-        tokens(headers("User Rating")).toDouble,
-        tokens(headers("Reviews")).toInt,
-        tokens(headers("Price")).toInt,
-        tokens(headers("Year")).toInt,
-        tokens(headers("Genre"))
-      )
-    }
+        Try {
+          Book(
+            tokens(headers("Name")),
+            tokens(headers("Author")),
+            tokens(headers("User Rating")).toDouble,
+            tokens(headers("Reviews")).toInt,
+            tokens(headers("Price")).toInt,
+            tokens(headers("Year")).toInt,
+            tokens(headers("Genre"))
+          )
+        }
+      }
+      else {
+        val nameAndOtherData: Array[String] =  data.split("\",")
+        val name: String = nameAndOtherData(0)
+        val otherData: Array[String] = nameAndOtherData.slice(1, 2).mkString("").split(",")
+        val nameColPos: Int = 1
+
+        Try {
+          Book(
+            name,
+            otherData(headers("Author") - nameColPos),
+            otherData(headers("User Rating") - nameColPos).toDouble,
+            otherData(headers("Reviews") - nameColPos).toInt,
+            otherData(headers("Price") - nameColPos).toInt,
+            otherData(headers("Year") - nameColPos).toInt,
+            otherData(headers("Genre") - nameColPos)
+          )
+        }
+      }
+
   }
 
   val fileName: String = "bestsellers with categories.csv"
@@ -51,7 +74,7 @@ object KafkaProducer extends App {
     val books: List[Try[Book]] = data.map(parseData(_, headers))
 
     val successTransform: List[Book] = books.filter(_.isSuccess).map(_.get)
-//    println(books.count(_.isSuccess))
+    println(books.count(_.isSuccess))
 
     implicit val formats: DefaultFormats.type = DefaultFormats
     val jsonList: List[(String, String)] = successTransform
@@ -59,9 +82,8 @@ object KafkaProducer extends App {
       .zipWithIndex
       .map(el => (el._2.toString, el._1))
 
-    val failedTransform = books.filter(_.isFailure)
-//    println(books.filter(_.isFailure))
-//    println(books.count(_.isFailure))
+    val failedTransform: List[Try[Book]] = books.filter(_.isFailure)
+    if (failedTransform.nonEmpty) println(s"${books.count(_.isFailure)} errors while parsing")
 
     val props: Properties = new Properties()
     props.put("bootstrap.servers", "localhost:29092")

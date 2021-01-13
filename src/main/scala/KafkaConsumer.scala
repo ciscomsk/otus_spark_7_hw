@@ -19,7 +19,7 @@ object KafkaConsumer extends App {
   val receive: Try[Unit] = Try {
     consumer.subscribe(List("books").asJavaCollection)
 
-    consumer.poll(Duration.ofSeconds(1))
+    consumer.poll(Duration.ofSeconds(5))
     val partitions: util.Set[TopicPartition] = consumer.assignment
     consumer.seekToEnd(partitions)
 
@@ -34,7 +34,7 @@ object KafkaConsumer extends App {
     consumer
       .poll(Duration.ofSeconds(1))
       .asScala
-      .foreach(msg => println(msg.value))
+      .foreach(msg => println(s"partition${msg.partition} : ${msg.value}"))
 
     consumer.close()
   }

@@ -46,7 +46,7 @@ object KafkaProducer extends App {
       }
       else {
         val nameAndOtherData: Array[String] =  data.split("\",")
-        val name: String = nameAndOtherData(0)
+        val name: String = s"${nameAndOtherData(0)}${"\""}"
         val otherData: Array[String] = nameAndOtherData.slice(1, 2).mkString("").split(",")
         val nameColPos: Int = 1
 

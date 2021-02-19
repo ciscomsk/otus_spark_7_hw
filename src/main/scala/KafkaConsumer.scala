@@ -14,7 +14,7 @@ object KafkaConsumer extends App {
   props.put("bootstrap.servers", "localhost:29092")
   props.put("group.id", "consumerOtus")
 
-  val consumer = new KafkaConsumer(props, new StringDeserializer, new StringDeserializer)
+  val consumer: KafkaConsumer[String, String] = new KafkaConsumer(props, new StringDeserializer, new StringDeserializer)
 
   val receive: Try[Unit] = Try {
     consumer.subscribe(List("books").asJavaCollection)
